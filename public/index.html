@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DJ da Viagem</title>
   
-  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="imgs/logo_Favicon.ico">
   
   <style>
@@ -20,7 +19,6 @@
       margin: 0;
     }
     
-    /* Logo adicionada acima do card */
     .logo {
       max-width: 150px;
       margin-top: 20px;
@@ -48,7 +46,6 @@
       gap: 10px;
     }
 
-    /* Estilização para o emoji de mão apontando */
     .pointed-finger {
       font-size: 2.5rem;
       transform: rotate(-15deg);
@@ -72,6 +69,26 @@
       font-weight: bold;
       margin-bottom: 15px;
       display: none;
+    }
+
+    /* Área de feedback direto na tela (sem popup) */
+    .status-msg {
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: none;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .status-success {
+      background-color: #121212;
+      border: 1px solid #1DB954;
+      color: #1DB954;
+    }
+    .status-error {
+      background-color: #121212;
+      border: 1px solid #e74c3c;
+      color: #e74c3c;
     }
 
     input {
@@ -146,14 +163,13 @@
 </head>
 <body>
 
-  <!-- Inserção do Logo com nome do arquivo CORRIGIDO -->
   <img class="logo" src="imgs/logo_Music-Car-dark.png" alt="Logo Music-Car">
 
   <div class="card">
-    <!-- Título principal com o emoji modificado e inclinado -->
     <h2><span class="pointed-finger">🫵🏼</span> é o 🎧 DJ da Viagem</h2>
     <p>Busque e escolha uma música para entrar direto na fila do carro!</p>
     
+    <div id="status-panel" class="status-msg"></div>
     <div id="limit-reached-msg" class="limit-reached">Limite de 2 músicas atingido para esta corrida! 🚗💨</div>
     <div id="limit-msg" class="limit-display">Você pode enviar mais 2 músicas nesta corrida.</div>
 
@@ -165,6 +181,7 @@
   <script>
     const limitMsg = document.getElementById('limit-msg');
     const limitReachedMsg = document.getElementById('limit-reached-msg');
+    const statusPanel = document.getElementById('status-panel');
     const searchInput = document.getElementById('search');
     const resultsList = document.getElementById('results');
     const loading = document.getElementById('loading');
@@ -173,7 +190,6 @@
     let songsAdded = parseInt(localStorage.getItem('songsAdded')) || 0;
     let debounceTimer;
 
-    // Atualiza a interface baseada no limite de músicas
     function updateLimitUI() {
       if (songsAdded >= MAX_SONGS) {
         limitMsg.style.display = 'none';
@@ -189,7 +205,15 @@
 
     updateLimitUI();
 
-    // Listener para o campo de busca com debounce
+    function showStatus(message, isSuccess) {
+      statusPanel.innerHTML = message;
+      statusPanel.className = 'status-msg ' + (isSuccess ? 'status-success' : 'status-error');
+      statusPanel.style.display = 'block';
+      setTimeout(() => {
+        statusPanel.style.display = 'none';
+      }, 5000);
+    }
+
     searchInput.addEventListener('input', (e) => {
       clearTimeout(debounceTimer);
       const query = e.target.value.trim();
@@ -202,10 +226,10 @@
       debounceTimer = setTimeout(() => searchSongs(query), 500);
     });
 
-    // Função para buscar músicas na API via Vercel
     async function searchSongs(query) {
       loading.style.display = 'block';
       resultsList.innerHTML = '';
+      statusPanel.style.display = 'none';
       
       try {
         const res = await fetch(`/api/proxy?action=search&q=${encodeURIComponent(query)}`);
@@ -224,7 +248,6 @@
                 <div class="song-artist">${artistName}</div>
               </div>
             `;
-            // Evento de clique para adicionar na fila
             li.onclick = () => addToQueue(track.uri, track.name);
             resultsList.appendChild(li);
           });
@@ -239,9 +262,12 @@
       }
     }
 
-    // Função para adicionar a música na fila do Spotify via Vercel
     async function addToQueue(uri, name) {
       if (songsAdded >= MAX_SONGS) return;
+
+      loading.style.display = 'block';
+      loading.textContent = 'Adicionando à fila...';
+      resultsList.innerHTML = '';
 
       try {
         const res = await fetch(`/api/proxy?action=queue&uri=${encodeURIComponent(uri)}`);
@@ -250,16 +276,17 @@
           songsAdded++;
           localStorage.setItem('songsAdded', songsAdded);
           updateLimitUI();
-          alert(`Sucesso! "${name}" entrou na fila 🚀\n\nDeixe o Spotify aberto no celular!`);
+          showStatus(`🚀 Sucesso! "${name}" entrou na fila!`, true);
           searchInput.value = '';
-          resultsList.innerHTML = '';
         } else {
-          const err = await res.json();
-          alert('Erro ao adicionar na fila. Certifique-se de que o Spotify está ativo tocando algo.');
+          showStatus('❌ Erro: Verifique se o Spotify está tocando no carro.', false);
         }
       } catch (error) {
         console.error('Erro ao adicionar:', error);
-        alert('Erro de conexão ao tentar adicionar na fila.');
+        showStatus('❌ Erro de conexão ao adicionar música.', false);
+      } finally {
+        loading.style.display = 'none';
+        loading.textContent = 'Buscando...';
       }
     }
   </script>
