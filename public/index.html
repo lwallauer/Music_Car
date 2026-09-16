@@ -1,240 +1,267 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DJ do Uber - Escolha sua Trilha</title>
-    <style>
-        :root {
-            --bg: #121212;
-            --surface: #181818;
-            --spotify-green: #1DB954;
-            --text: #ffffff;
-            --gray: #b3b3b3;
-            --error: #ff5555;
-        }
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 16px;
-            box-sizing: border-box;
-        }
-        .card {
-            background-color: var(--surface);
-            width: 100%;
-            max-width: 400px;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            text-align: center;
-        }
-        h1 { font-size: 20px; margin-bottom: 6px; }
-        p { color: var(--gray); font-size: 13px; margin-bottom: 16px; line-height: 1.4; }
-        
-        .counter {
-            font-size: 12px;
-            color: var(--spotify-green);
-            margin-bottom: 16px;
-            background: rgba(29, 185, 84, 0.1);
-            padding: 8px;
-            border-radius: 6px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DJ da Viagem</title>
+  
+  <!-- Favicon adicionado -->
+  <link rel="icon" type="image/x-icon" href="imgs/logo_Favicon.ico">
+  
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+    }
+    
+    /* Logo adicionada acima do card */
+    .logo {
+      max-width: 150px;
+      margin-top: 20px;
+      margin-bottom: 30px;
+      display: block;
+    }
 
-        .search-box {
-            position: relative;
-            margin-bottom: 16px;
-        }
-        input {
-            width: 100%;
-            padding: 14px;
-            background: #282828;
-            border: 1px solid #333;
-            border-radius: 8px;
-            color: white;
-            font-size: 15px;
-            outline: none;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
-        input:focus { border-color: var(--spotify-green); }
+    .card {
+      background-color: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
 
-        .results {
-            max-height: 250px;
-            overflow-y: auto;
-            text-align: left;
-            margin-bottom: 16px;
-        }
-        .track-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #222;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .track-item:hover { background: #2a2a2a; }
-        .track-item img {
-            width: 45px;
-            height: 45px;
-            border-radius: 4px;
-            margin-right: 12px;
-        }
-        .track-info {
-            overflow: hidden;
-        }
-        .track-title {
-            font-size: 14px;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .track-artist {
-            font-size: 12px;
-            color: var(--gray);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        #status { font-size: 13px; min-height: 20px; margin-top: 10px; }
-    </style>
+    /* Estilização para o emoji de mão apontando */
+    .pointed-finger {
+      font-size: 2.5rem;
+      transform: rotate(-15deg);
+      display: inline-block;
+    }
+
+    p {
+      color: #aaaaaa;
+      margin-bottom: 25px;
+      font-size: 0.95rem;
+    }
+
+    .limit-display {
+      color: #1DB954;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    .limit-reached {
+      color: #e74c3c;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background-color: #121212;
+      color: #ffffff;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #1DB954;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+    }
+
+    li {
+      background-color: #121212;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+
+    li:hover {
+      background-color: #222222;
+    }
+
+    li img {
+      width: 50px;
+      height: 50px;
+      border-radius: 4px;
+      margin-right: 15px;
+    }
+
+    .song-info {
+      flex: 1;
+    }
+
+    .song-title {
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .song-artist {
+      color: #aaaaaa;
+      font-size: 0.85rem;
+    }
+
+    .loading {
+      color: #aaaaaa;
+      font-size: 0.9rem;
+      display: none;
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>🎧 DJ da Viagem</h1>
-        <p>Busque e escolha uma música para entrar direto na fila do carro!</p>
+  <!-- Inserção do Logo -->
+  <img class="logo" src="imgs/logo_Musci-Car-dark.png" alt="Logo Music-Car">
+
+  <div class="card">
+    <!-- Título principal com o emoji modificado e inclinado -->
+    <h2><span class="pointed-finger">🫵🏼</span> é o 🎧 DJ da Viagem</h2>
+    <p>Busque e escolha uma música para entrar direto na fila do carro!</p>
+    
+    <div id="limit-reached-msg" class="limit-reached">Limite de 2 músicas atingido para esta corrida! 🚗💨</div>
+    <div id="limit-msg" class="limit-display">Você pode enviar mais 2 músicas nesta corrida.</div>
+
+    <input type="text" id="search" placeholder="Digite o nome da música ou artista..." autocomplete="off">
+    <div id="loading" class="loading">Buscando...</div>
+    <ul id="results"></ul>
+  </div>
+
+  <script>
+    const limitMsg = document.getElementById('limit-msg');
+    const limitReachedMsg = document.getElementById('limit-reached-msg');
+    const searchInput = document.getElementById('search');
+    const resultsList = document.getElementById('results');
+    const loading = document.getElementById('loading');
+
+    const MAX_SONGS = 2;
+    let songsAdded = parseInt(localStorage.getItem('songsAdded')) || 0;
+    let debounceTimer;
+
+    // Atualiza a interface baseada no limite de músicas
+    function updateLimitUI() {
+      if (songsAdded >= MAX_SONGS) {
+        limitMsg.style.display = 'none';
+        limitReachedMsg.style.display = 'block';
+        searchInput.disabled = true;
+        searchInput.placeholder = "Limite atingido!";
+        resultsList.innerHTML = '';
+      } else {
+        const remaining = MAX_SONGS - songsAdded;
+        limitMsg.textContent = `Você pode enviar mais ${remaining} música${remaining > 1 ? 's' : ''} nesta corrida.`;
+      }
+    }
+
+    updateLimitUI();
+
+    // Listener para o campo de busca com debounce
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      const query = e.target.value.trim();
+      
+      if (query.length < 3) {
+        resultsList.innerHTML = '';
+        return;
+      }
+
+      debounceTimer = setTimeout(() => searchSongs(query), 500);
+    });
+
+    // Função para buscar músicas na API via Vercel
+    async function searchSongs(query) {
+      loading.style.display = 'block';
+      resultsList.innerHTML = '';
+      
+      try {
+        const res = await fetch(`/api/proxy?action=search&q=${encodeURIComponent(query)}`);
+        const data = await res.json();
         
-        <div class="counter" id="counterText">Você pode enviar mais 2 músicas nesta corrida.</div>
+        if (data.tracks && data.tracks.items.length > 0) {
+          data.tracks.items.forEach(track => {
+            const li = document.createElement('li');
+            const img = track.album.images.length > 0 ? track.album.images[0].url : '';
+            const artistName = track.artists.map(a => a.name).join(', ');
+            
+            li.innerHTML = `
+              <img src="${img}" alt="Capa">
+              <div class="song-info">
+                <div class="song-title">${track.name}</div>
+                <div class="song-artist">${artistName}</div>
+              </div>
+            `;
+            // Evento de clique para adicionar na fila
+            li.onclick = () => addToQueue(track.uri, track.name);
+            resultsList.appendChild(li);
+          });
+        } else {
+          resultsList.innerHTML = '<p style="color: #aaaaaa; margin-top: 15px;">Nenhuma música encontrada.</p>';
+        }
+      } catch (error) {
+        console.error('Erro na busca:', error);
+        resultsList.innerHTML = '<p style="color: #e74c3c; margin-top: 15px;">Erro ao buscar músicas.</p>';
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
 
-        <div id="searchContainer">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Digite o nome da música ou artista..." autocomplete="off">
-            </div>
-            <div class="results" id="resultsList"></div>
-        </div>
+    // Função para adicionar a música na fila do Spotify via Vercel
+    async function addToQueue(uri, name) {
+      if (songsAdded >= MAX_SONGS) return;
+
+      try {
+        const res = await fetch(`/api/proxy?action=queue&uri=${encodeURIComponent(uri)}`);
         
-        <div id="status"></div>
-    </div>
-
-    <script>
-        const STORAGE_KEY = 'uber_dj_songs_sent';
-        const MAX_SONGS = 2;
-
-        function getSongsSent() {
-            return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+        if (res.ok) {
+          songsAdded++;
+          localStorage.setItem('songsAdded', songsAdded);
+          updateLimitUI();
+          alert(`Sucesso! "${name}" entrou na fila 🚀\n\nDeixe o Spotify aberto no celular!`);
+          searchInput.value = '';
+          resultsList.innerHTML = '';
+        } else {
+          const err = await res.json();
+          alert('Erro ao adicionar na fila. Certifique-se de que o Spotify está ativo tocando algo.');
         }
-
-        function updateCounterUI() {
-            const sent = getSongsSent();
-            const remaining = MAX_SONGS - sent;
-            const counterEl = document.getElementById('counterText');
-            const searchContainer = document.getElementById('searchContainer');
-
-            if (remaining > 0) {
-                counterEl.textContent = `Você pode enviar mais ${remaining} ${remaining === 1 ? 'música' : 'músicas'} nesta corrida.`;
-            } else {
-                counterEl.textContent = "Limite de 2 músicas atingido para esta corrida! 🚗💨";
-                counterEl.style.color = "#ff5555";
-                counterEl.style.background = "rgba(255, 85, 85, 0.1)";
-                searchContainer.style.display = 'none';
-            }
-        }
-
-        updateCounterUI();
-
-        let searchTimeout;
-        const searchInput = document.getElementById('searchInput');
-        const resultsList = document.getElementById('resultsList');
-        const statusDiv = document.getElementById('status');
-
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            const query = e.target.value.trim();
-
-            if (query.length < 3) {
-                resultsList.innerHTML = '';
-                return;
-            }
-
-            searchTimeout = setTimeout(async () => {
-                statusDiv.textContent = "Buscando músicas...";
-                try {
-                    const res = await fetch(`/api/proxy?action=search&q=${encodeURIComponent(query)}`);
-                    const data = await res.json();
-                    
-                    resultsList.innerHTML = '';
-                    statusDiv.textContent = '';
-
-                    if (data.tracks && data.tracks.items.length > 0) {
-                        data.tracks.items.forEach(track => {
-                            const item = document.createElement('div');
-                            item.className = 'track-item';
-                            
-                            const albumImg = track.album.images[2] ? track.album.images[2].url : '';
-                            const artists = track.artists.map(a => a.name).join(', ');
-
-                            item.innerHTML = `
-                                <img src="${albumImg}" alt="Capa">
-                                <div class="track-info">
-                                    <div class="track-title">${track.name}</div>
-                                    <div class="track-artist">${artists}</div>
-                                </div>
-                            `;
-
-                            item.addEventListener('click', () => selectTrack(track.uri, track.name));
-                            resultsList.appendChild(item);
-                        });
-                    } else {
-                        statusDiv.textContent = "Nenhuma música encontrada.";
-                    }
-                } catch (err) {
-                    statusDiv.textContent = "Erro ao buscar músicas.";
-                    statusDiv.style.color = "var(--error)";
-                }
-            }, 400);
-        });
-
-        async function selectTrack(uri, trackName) {
-            let sent = getSongsSent();
-            if (sent >= MAX_SONGS) return;
-
-            resultsList.innerHTML = '';
-            searchInput.value = '';
-            statusDiv.style.color = "var(--spotify-green)";
-            statusDiv.textContent = `Adicionando "${trackName}" à fila...`;
-
-            try {
-                const res = await fetch('/api/proxy', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uri })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    sent++;
-                    localStorage.setItem(STORAGE_KEY, sent);
-                    statusDiv.textContent = `Sucesso! "${trackName}" entrou na fila 🚀`;
-                    updateCounterUI();
-                } else {
-                    statusDiv.textContent = data.error || "Erro ao adicionar música.";
-                    statusDiv.style.color = "var(--error)";
-                }
-            } catch (err) {
-                statusDiv.textContent = "Erro de conexão com o servidor do carro.";
-                statusDiv.style.color = "var(--error)";
-            }
-        }
-    </script>
+      } catch (error) {
+        console.error('Erro ao adicionar:', error);
+        alert('Erro de conexão ao tentar adicionar na fila.');
+      }
+    }
+  </script>
 </body>
 </html>
