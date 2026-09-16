@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DJ da Viagem</title>
   
-  <link rel="icon" type="image/x-icon" href="imgs/logo_Favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/imgs/logo_Favicon.ico">
   
   <style>
     body {
@@ -71,24 +71,16 @@
       display: none;
     }
 
-    /* Área de feedback direto na tela (sem popup) */
-    .status-msg {
+    /* Nova classe para exibir o sucesso direto na tela */
+    .success-msg {
+      color: #1DB954;
       font-weight: bold;
       margin-bottom: 15px;
       display: none;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .status-success {
       background-color: #121212;
       border: 1px solid #1DB954;
-      color: #1DB954;
-    }
-    .status-error {
-      background-color: #121212;
-      border: 1px solid #e74c3c;
-      color: #e74c3c;
+      padding: 10px;
+      border-radius: 8px;
     }
 
     input {
@@ -169,7 +161,8 @@
     <h2><span class="pointed-finger">🫵🏼</span> é o 🎧 DJ da Viagem</h2>
     <p>Busque e escolha uma música para entrar direto na fila do carro!</p>
     
-    <div id="status-panel" class="status-msg"></div>
+    <!-- Local onde a mensagem de sucesso vai aparecer -->
+    <div id="success-msg" class="success-msg"></div>
     <div id="limit-reached-msg" class="limit-reached">Limite de 2 músicas atingido para esta corrida! 🚗💨</div>
     <div id="limit-msg" class="limit-display">Você pode enviar mais 2 músicas nesta corrida.</div>
 
@@ -181,7 +174,7 @@
   <script>
     const limitMsg = document.getElementById('limit-msg');
     const limitReachedMsg = document.getElementById('limit-reached-msg');
-    const statusPanel = document.getElementById('status-panel');
+    const successMsg = document.getElementById('success-msg');
     const searchInput = document.getElementById('search');
     const resultsList = document.getElementById('results');
     const loading = document.getElementById('loading');
@@ -205,15 +198,6 @@
 
     updateLimitUI();
 
-    function showStatus(message, isSuccess) {
-      statusPanel.innerHTML = message;
-      statusPanel.className = 'status-msg ' + (isSuccess ? 'status-success' : 'status-error');
-      statusPanel.style.display = 'block';
-      setTimeout(() => {
-        statusPanel.style.display = 'none';
-      }, 5000);
-    }
-
     searchInput.addEventListener('input', (e) => {
       clearTimeout(debounceTimer);
       const query = e.target.value.trim();
@@ -229,7 +213,7 @@
     async function searchSongs(query) {
       loading.style.display = 'block';
       resultsList.innerHTML = '';
-      statusPanel.style.display = 'none';
+      successMsg.style.display = 'none';
       
       try {
         const res = await fetch(`/api/proxy?action=search&q=${encodeURIComponent(query)}`);
@@ -265,28 +249,46 @@
     async function addToQueue(uri, name) {
       if (songsAdded >= MAX_SONGS) return;
 
-      loading.style.display = 'block';
-      loading.textContent = 'Adicionando à fila...';
-      resultsList.innerHTML = '';
+      // Adiciona um feedback temporário na lista para mostrar que a ação iniciou
+      const tempLoading = document.createElement('li');
+      tempLoading.innerHTML = '<div class="song-info"><div class="song-title">Adicionando à fila...</div></div>';
+      resultsList.insertBefore(tempLoading, resultsList.firstChild);
 
       try {
-        const res = await fetch(`/api/proxy?action=queue&uri=${encodeURIComponent(uri)}`);
+        const res = await fetch('/api/proxy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ uri: uri })
+        });
         
         if (res.ok) {
           songsAdded++;
           localStorage.setItem('songsAdded', songsAdded);
           updateLimitUI();
-          showStatus(`🚀 Sucesso! "${name}" entrou na fila!`, true);
+          
+          // Renderiza o sucesso na própria tela
+          successMsg.innerHTML = `Sucesso! "${name}" entrou na fila 🚀<br><span style="font-size: 0.8rem; font-weight: normal; color: #aaaaaa;">Deixe o Spotify aberto no celular!</span>`;
+          successMsg.style.display = 'block';
+          
           searchInput.value = '';
+          resultsList.innerHTML = '';
+          
+          // Oculta a mensagem depois de alguns segundos
+          setTimeout(() => {
+            successMsg.style.display = 'none';
+          }, 6000);
         } else {
-          showStatus('❌ Erro: Verifique se o Spotify está tocando no carro.', false);
+          tempLoading.remove();
+          successMsg.innerHTML = '<span style="color: #e74c3c;">Erro ao adicionar. Certifique-se de que o Spotify está tocando algo no painel.</span>';
+          successMsg.style.display = 'block';
         }
       } catch (error) {
         console.error('Erro ao adicionar:', error);
-        showStatus('❌ Erro de conexão ao adicionar música.', false);
-      } finally {
-        loading.style.display = 'none';
-        loading.textContent = 'Buscando...';
+        tempLoading.remove();
+        successMsg.innerHTML = '<span style="color: #e74c3c;">Erro de conexão. Tente novamente.</span>';
+        successMsg.style.display = 'block';
       }
     }
   </script>
