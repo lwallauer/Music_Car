@@ -21,7 +21,6 @@ async function getAccessToken() {
 }
 
 module.exports = async (req, res) => {
-    // Permitir requisições do nosso próprio front-end
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -31,10 +30,35 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const accessToken = await getAccessToken();
+        // Rota mágica para capturar o Refresh Token via Web na Vercel
+        if (req.method === 'GET' && req.query.code) {
+            const code = req.query.code;
+            const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    grant_type: 'authorization_code',
+                    code: code,
+                    redirect_uri: 'https://music-car.vercel.app/',
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET
+                })
+            });
+            const tokenData = await tokenRes.json();
+            return res.status(200).send(`
+                <html>
+                <body style="background:#121212;color:#fff;font-family:sans-serif;text-align:center;padding-top:50px;">
+                    <h2>Seu Refresh Token foi gerado com sucesso!</h2>
+                    <p>Copie o código abaixo e cole nas Variáveis de Ambiente da Vercel (SPOTIFY_REFRESH_TOKEN):</p>
+                    <textarea style="width:80%;height:100px;background:#222;color:#1DB954;font-size:16px;padding:10px;border-radius:8px;">${tokenData.refresh_token || JSON.stringify(tokenData)}</textarea>
+                </body>
+                </html>
+            `);
+        }
 
-        // Rota de Busca de Músicas (Abordagem B)
+        // Rota de Busca de Músicas
         if (req.method === 'GET' && req.query.action === 'search') {
+            const accessToken = await getAccessToken();
             const query = req.query.q;
             if (!query) return res.status(400).json({ error: 'Termo de busca vazio' });
 
@@ -47,6 +71,7 @@ module.exports = async (req, res) => {
 
         // Rota para Adicionar à Fila
         if (req.method === 'POST') {
+            const accessToken = await getAccessToken();
             const { uri } = req.body;
             if (!uri) return res.status(400).json({ error: 'URI da música ausente' });
 
