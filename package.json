@@ -1,0 +1,9 @@
+{
+  "name": "uber-spotify-dj",
+  "version": "1.0.0",
+  "description": "DJ automático para o Uber via Spotify API",
+  "main": "api/proxy.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
